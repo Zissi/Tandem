@@ -72,11 +72,9 @@ def happiness(table):
     Find the happiness of the table
     - by calculating the maximum distance between the letters
     """
-
     return 2
 
 # create list of all possible tables
-print('find allcombinations')
 possible_tables = [table for table in pulp.allcombinations(humans, MAX_TABLE_SIZE) if len(table) > 1 and table_languages(table)]
 print('found all combinations')
 
@@ -90,12 +88,7 @@ seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
 
 seating_model += sum([happiness(table) * x[table] for table in possible_tables])
 
-# specify the maximum number of tables
-seating_model += sum([x[table] for table in possible_tables]) <= max_tables, \
-                            "Maximum_number_of_tables"
-print('Have model')
-
-# A guest must seated at one and only one table
+# A human must seated at one and only one table
 for human in humans:
     seating_model += sum([x[table] for table in possible_tables
                                 if human in table]) == 1, "Must_seat_%s" % human
