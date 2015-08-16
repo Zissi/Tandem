@@ -4,14 +4,11 @@ from humans import Human
 
 MAX_TABLE_SIZE = 4
 
-humans = [Human(name='tim', learning_languages=[('german', 1), ('english', 2)], teaching_languages=['french']),
+HUMANS = [Human(name='tim', learning_languages=[('german', 1), ('english', 2)], teaching_languages=['french']),
           Human(name='tom', learning_languages=[('english', 1), ('french', 2)], teaching_languages=['german']),
           Human(name='tum', learning_languages=[('german', 1), ('english', 2)], teaching_languages=['french']),
           Human(name='tam', learning_languages=[('german', 1), ('english', 2)], teaching_languages=['french'])]
 
-
-max_tables = 5
-max_table_size = 4
 
 def table_languages(table):
     language_combinations = get_overlapping_languages(table)
@@ -67,38 +64,46 @@ def _get_language_combinations(human):
 
 
 
-def happiness(table):
+def happiness(table, languages):
     """
     Find the happiness of the table
-    - by calculating the maximum distance between the letters
     """
     return 2
 
+
 # create list of all possible tables
-possible_tables = [table for table in pulp.allcombinations(humans, MAX_TABLE_SIZE) if len(table) > 1 and table_languages(table)]
+def language_tables():
+    for table in pulp.allcombinations(HUMANS, MAX_TABLE_SIZE):
+        if len(table) <= 1:
+            continue
+        languages = table_languages(table)
+        if languages:
+            yield (table, languages)
+
+possible_tables = list(language_tables())
 print('found all combinations')
 
 # create a binary variable to state that a table setting is used
-x = pulp.LpVariable.dicts('table', possible_tables,
+x = pulp.LpVariable.dicts('table', [table for table, _ in possible_tables],
                             lowBound=0,
                             upBound=1,
                             cat=pulp.LpInteger)
 
 seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
 
-seating_model += sum([happiness(table) * x[table] for table in possible_tables])
+seating_model += sum([happiness(table, languages) * x[table] for table, languages in possible_tables])
 
 # A human must seated at one and only one table
-for human in humans:
-    seating_model += sum([x[table] for table in possible_tables
+for human in HUMANS:
+    seating_model += sum([x[table] for table, _ in possible_tables
                                 if human in table]) == 1, "Must_seat_%s" % human
 
 print('done with model')
 
 seating_model.solve()
 
-print("The choosen tables are out of a total of %s:" % len(possible_tables))
-for table in possible_tables:
-    print(x[table].value())
+print("The choosen tables are")
+for table, languages in possible_tables:
     if x[table].value() == 1.0:
         print(table)
+        print(languages)
