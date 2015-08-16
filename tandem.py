@@ -1,23 +1,70 @@
-
+from itertools import product
 import pulp
 
-humans = [{'name': 'tim', 'learning_languages': [('german', 1), ('english', 2)], 'teaching_languages': ['french']},
-          {'name': 'tom', 'learning_languages': [('german', 1), ('english', 2)], 'teaching_languages': ['french']},
-          {'name': 'tum', 'learning_languages': [('french', 1), ('english', 2)], 'teaching_languages': ['german']}]
+TEACHING_LANGUAGES = 'teaching_languages'
+LEARNING_LANGUAGES = 'learning_languages'
+
+humans = [{'name': 'tim', LEARNING_LANGUAGES: [('german', 1), ('english', 2)], TEACHING_LANGUAGES: ['french']},
+          {'name': 'tom', LEARNING_LANGUAGES: [('german', 1), ('english', 2)], TEACHING_LANGUAGES: ['french']},
+          {'name': 'tum', LEARNING_LANGUAGES: [('french', 1), ('english', 2)], TEACHING_LANGUAGES: ['german']}]
 
 max_tables = 5
 max_table_size = 4
 guests = 'A B C D E F G'.split()
 
-def fittness(table):
-    pass
+def table_languages(table):
+    language_combinations = get_overlapping_languages(table)
+    valid_languages = languages_with_teachers(table, language_combinations)
+    return valid_languages
 
-def no_teacher(table):
+
+def languages_with_teachers(table, language_combinations):
+    possible_languages = set()
+
+    for combination in language_combinations:
+        if _combination_has_teachers(table, combination):
+            possible_languages += combination
+
+    return possible_languages
+
+
+def _combination_has_teachers(table, combination):
+    has_teacher = {}
+
     for human in table:
-        return 0
+        for language in human[TEACHING_LANGUAGES]:
+            has_teacher[language] = True
+            if _combination_has_enough_teachers(has_teacher, combination):
+                return True
 
-def disjunct_humans():
-    return 0
+    return False
+
+
+def _combination_has_enough_teachers(has_teacher, combination):
+    for language in combination:
+        if not has_teacher.get(language, False):
+            return False
+
+    return True
+
+
+def get_overlapping_languages(table):
+    table_languages = _get_language_combinations(table[0])
+
+    for human in table[1:]:
+        table_languages &= _get_language_combinations(human)
+        if not table_languages:
+            break
+
+    return table_languages
+
+
+def _get_language_combinations(human):
+    learning_languages = (language for language, _ in human[LEARNING_LANGUAGES])
+    language_combinations = product(learning_languages, human[TEACHING_LANGUAGES])
+    return {frozenset(combination) for combination in language_combinations}
+
+
 
 def happiness(table):
     """
