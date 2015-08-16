@@ -1,13 +1,13 @@
 from itertools import product
 import pulp
 from humans import Human
-
+import numpy as np
 MAX_TABLE_SIZE = 4
 
 HUMANS = [Human(name='tim', learning_languages=[('german', 1), ('english', 2)], teaching_languages=['french']),
-          Human(name='tom', learning_languages=[('english', 1), ('french', 2)], teaching_languages=['german']),
-          Human(name='tum', learning_languages=[('german', 1), ('english', 2)], teaching_languages=['french']),
-          Human(name='tam', learning_languages=[('german', 1), ('english', 2)], teaching_languages=['french'])]
+          Human(name='tom', learning_languages=[('english', 2), ('french', 2)], teaching_languages=['german']),
+          Human(name='tum', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french']),
+          Human(name='tam', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french'])]
 
 
 def table_languages(table):
@@ -64,11 +64,26 @@ def _get_language_combinations(human):
 
 
 
-def happiness(table, languages):
+def unhappiness(table, language_combination):
     """
     Find the happiness of the table
     """
-    return 2
+    ranking_unhappiness = 0
+    levels = []
+    
+    for human in table:
+        for idx, (learning_language, level) in enumerate(human.learning_languages):
+            if learning_language in language_combination:
+                ranking_unhappiness += idx
+                levels.append(level)
+                break
+    
+    levels = np.array(levels)
+    levels = levels / max(levels)
+    level_unhappiness = np.std(levels)
+    return level_unhappiness + ranking_unhappiness
+
+       
 
 
 # create list of all possible tables
@@ -77,8 +92,8 @@ def language_tables():
         if len(table) <= 1:
             continue
         languages = table_languages(table)
-        if languages:
-            yield (table, languages)
+        for language_combination in languages:
+            yield (table, language_combination)
 
 possible_tables = list(language_tables())
 print('found all combinations')
@@ -91,7 +106,7 @@ x = pulp.LpVariable.dicts('table', [table for table, _ in possible_tables],
 
 seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
 
-seating_model += sum([happiness(table, languages) * x[table] for table, languages in possible_tables])
+seating_model += sum([unhappiness(table, language_combination) * x[table] for table, language_combination in possible_tables])
 
 # A human must seated at one and only one table
 for human in HUMANS:
