@@ -14,7 +14,6 @@ def fittness(table):
 
 def no_teacher(table):
     for human in table:
-
         return 0
 
 def disjunct_humans():
@@ -27,23 +26,23 @@ def happiness(table):
     """
     return abs(ord(table[0]) - ord(table[-1]))
 
-#create list of all possible tables
+# create list of all possible tables
 print('find allcombinations')
 possible_tables = [tuple(c) for c in pulp.allcombinations(guests,
-                                        max_table_size) if len(c)>1]
+                                        max_table_size) if len(c) > 1]
 print('found all combinations')
 
-#create a binary variable to state that a table setting is used
+# create a binary variable to state that a table setting is used
 x = pulp.LpVariable.dicts('table', possible_tables,
-                            lowBound = 0,
-                            upBound = 1,
-                            cat = pulp.LpInteger)
+                            lowBound=0,
+                            upBound=1,
+                            cat=pulp.LpInteger)
 
 seating_model = pulp.LpProblem("Wedding Seating Model", pulp.LpMinimize)
 
 seating_model += sum([happiness(table) * x[table] for table in possible_tables])
 
-#specify the maximum number of tables
+# specify the maximum number of tables
 seating_model += sum([x[table] for table in possible_tables]) <= max_tables, \
                             "Maximum_number_of_tables"
 
@@ -51,16 +50,16 @@ seating_model += sum([x[table] for table in possible_tables]) == sum([x[table] f
                             "test"
 print('Have model')
 
-#A guest must seated at one and only one table
+# A guest must seated at one and only one table
 for guest in guests:
     seating_model += sum([x[table] for table in possible_tables
-                                if guest in table]) == 1, "Must_seat_%s"%guest
+                                if guest in table]) == 1, "Must_seat_%s" % guest
 
 print('done with model')
 
 seating_model.solve()
 
-print("The choosen tables are out of a total of %s:"%len(possible_tables))
+print("The choosen tables are out of a total of %s:" % len(possible_tables))
 for table in possible_tables:
     if x[table].value() == 1.0:
         print(table)
