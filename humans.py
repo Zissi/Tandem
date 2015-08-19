@@ -6,4 +6,4 @@ class Human(object):
         self.teaching_languages = teaching_languages
 
     def __repr__(self):
-        return '{} {} {}'.format(self.name, self.learning_languages, self.teaching_languages)
+        return self.name

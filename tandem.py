@@ -1,6 +1,6 @@
 from itertools import product
 
-import numpy as np
+#import numpy as np
 import pulp
 
 from humans import Human
@@ -15,13 +15,13 @@ HUMANS = [Human(name='anna', learning_languages=[('german', 10)], teaching_langu
           Human(name='erik', learning_languages=[('greek', 2), ('french', 2)], teaching_languages=['german'])]
 
 
-def table_languages(table):
-    language_combinations = get_overlapping_languages(table)
-    valid_languages = languages_with_teachers(table, language_combinations)
+def _table_languages(table):
+    language_combinations = _get_overlapping_languages(table)
+    valid_languages = _languages_with_teachers(table, language_combinations)
     return valid_languages
 
 
-def languages_with_teachers(table, language_combinations):
+def _languages_with_teachers(table, language_combinations):
     possible_languages = set()
 
     for combination in language_combinations:
@@ -51,7 +51,7 @@ def _combination_has_enough_teachers(has_teacher, combination):
     return True
 
 
-def get_overlapping_languages(table):
+def _get_overlapping_languages(table):
     table_languages = _get_language_combinations(table[0])
 
     for human in table[1:]:
@@ -68,7 +68,6 @@ def _get_language_combinations(human):
     return {frozenset(combination) for combination in language_combinations}
 
 
-
 def unhappiness(table, language_combination):
     ranking_unhappiness = 0
     levels = []
@@ -79,19 +78,19 @@ def unhappiness(table, language_combination):
                 ranking_unhappiness += idx
                 levels.append(level)
                 break
-    
-    levels = np.array(levels)
-    levels = levels / max(levels)
-    level_unhappiness = np.std(levels)
-    total_unhappiness = ranking_unhappiness + level_unhappiness
+
+ #   levels = np.array(levels)
+ #   levels = levels / max(levels)
+ #   level_unhappiness = np.std(levels)
+    total_unhappiness = ranking_unhappiness# + level_unhappiness
     return total_unhappiness
 
 
-def language_tables():
-    for table in pulp.allcombinations(HUMANS, MAX_TABLE_SIZE):
+def language_tables(humans, max_table_size):
+    for table in pulp.allcombinations(humans, max_table_size):
         if len(table) <= 1:
             continue
-        languages = table_languages(table)
+        languages = _table_languages(table)
         for language_combination in languages:
             if _acceptable_level_difference(table, language_combination):
                 yield (table, frozenset(language_combination))
@@ -104,7 +103,8 @@ def _acceptable_level_difference(table, language_combination):
             return False
         
     return True
-            
+
+
 def _learning_levels(table, language):
     levels = []
     for human in table:
@@ -114,29 +114,33 @@ def _learning_levels(table, language):
                 break
     return levels
 
+
 def _max_difference(levels):
     return max(levels) - min(levels)
                 
 
-possible_tables = list(language_tables())
-print('Found all combinations')
+def calculate_tables(humans, max_table_size):
+    possible_tables = list(language_tables(humans, max_table_size))
 
-x = pulp.LpVariable.dicts('table', possible_tables,
-                            lowBound=0,
-                            upBound=1,
-                            cat=pulp.LpInteger)
+    x = pulp.LpVariable.dicts('table', possible_tables,
+                                lowBound=0,
+                                upBound=1,
+                                cat=pulp.LpInteger)
 
-seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
+    seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
 
-seating_model += sum([unhappiness(*language_table) * x[language_table] for language_table in possible_tables])
+    seating_model += sum([unhappiness(*language_table) * x[language_table] for language_table in possible_tables])
 
-for human in HUMANS:
-    seating_model += sum([x[(table, languages)] for table, languages in possible_tables if human in table]) == 1, "Must_seat_{}".format(human)
+    for human in humans:
+        seating_model += sum([x[(table, languages)] for table, languages in possible_tables if human in table]) == 1, "Must_seat_{}".format(human)
 
-seating_model.solve()
+    seating_model.solve()
+    final_tables = []
+    print("The choosen tables are")
+    for language_table in possible_tables:
+        if x[language_table].value() == 1.0:
+            final_tables.append(language_table)
+            print(language_table[0])
+            print(language_table[1])
+    return final_tables
 
-print("The choosen tables are")
-for language_table in possible_tables:
-    if x[language_table].value() == 1.0:
-        print(language_table[0])
-        print(language_table[1])

@@ -1,12 +1,18 @@
 from humans import Human
+from tandem import calculate_tables
 
 __author__ = 'franziska'
 from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-HUMANS = []
+HUMANS = [Human(name='anna', learning_languages=[('german', 10)], teaching_languages=['french', 'english']),
+          Human(name='bert', learning_languages=[('english', 2), ('french', 2)], teaching_languages=['german']),
+          Human(name='clara', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french']),
+          Human(name='dirk', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french']),
+          Human(name='erik', learning_languages=[('greek', 2), ('french', 2)], teaching_languages=['german'])]
 
+MAX_TABLE_SIZE = 4
 
 @app.route('/')
 def hello_world():
@@ -25,7 +31,7 @@ def my_form_post():
     elif request.form['btn'] == 'DeleteAll':
         return delete_all_humans(request)
     elif request.form['btn'] == 'Calculate':
-        return render_template('result.html')
+        return render_template('result.html', tables=calculate_tables(HUMANS, MAX_TABLE_SIZE))
 
 
 def delete_all_humans(request):

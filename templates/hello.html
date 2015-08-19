@@ -4,7 +4,7 @@
     <h1></h1>
     <dl>
     {% for human in humans %}
-        <dt>{{ human|e }}</dt>
+        <dt>{{ human|e }}{{ human.learning_languages|e }}{{ human.teaching_languages|e }}</dt>
     {% endfor %}
     </dl>
     <form action="." method="POST">
