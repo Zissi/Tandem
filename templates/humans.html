@@ -1,12 +1,19 @@
 <!DOCTYPE html>
 <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<div class="content container">
+	<div class="row">
+	    <div class="col-md-8">
+
 <title>Humans</title>
 <body>
     <h1>People</h1>
     <form action="." method="POST">
         <div>
             {% for human in humans %}
-        <p><b>{{ human|e }}</b> <input type=submit name='btn' value=X human={{ human|e }}></p>
+        <p><b>{{ human|e }}</b>
+        <button type="submit" class="btn btn-xs" name="remove" value="{{ human|e }}">
+                <span class="glyphicon glyphicon-remove"></span>
+        </button>
         <p>learning: {% for llanguage in human.learning_languages %}{{ llanguage|e }} {% endfor %} teaching: {% for tlanguage in human.teaching_languages %}{{ tlanguage|e }} {% endfor %}</p>
             {% endfor %}
         </div>
@@ -25,5 +32,8 @@
         <p><input type=submit name='btn' value=Calculate></p>
     </form>
 
+        </div>
+    </div>
+</div>
 </body>
 </html>
