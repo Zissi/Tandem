@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+    <h1></h1>
+    <dl>
+    {% for human in humans %}
+        <dt>{{ human|e }}</dt>
+    {% endfor %}
+    </dl>
+    <form action="." method="POST">
+      <dl>
+        <dt>Enter name:
+        <dd><input type=text size=30 name=name>
+        <dt>Enter learning languages, level:
+        <dd><input type=text size=30 name=learning>
+        <dt>Enter teaching languages:
+        <dd><input type=text size=30 name=teaching>
+        <dd><input type=submit value=Submit>
+      </dl>
+    </form>
+</body>
+</html>
