@@ -44,7 +44,6 @@ def enter_new_human(request):
     learning_languages = get_learning_languages(text)
     teaching_languages = get_teaching_languages(text)
     make_new_human(text[0], learning_languages, teaching_languages)
-    print(teaching_languages, learning_languages)
     return render_template('hello.html', humans=HUMANS)
 
 

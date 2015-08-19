@@ -116,6 +116,7 @@ def _learning_levels(table, language):
 
 
 def _max_difference(levels):
+    levels = [int(i) for i in levels]
     return max(levels) - min(levels)
                 
 
@@ -130,7 +131,7 @@ def calculate_tables(humans, max_table_size):
     seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
 
     seating_model += sum([unhappiness(*language_table) * x[language_table] for language_table in possible_tables])
-
+    print(humans)
     for human in humans:
         seating_model += sum([x[(table, languages)] for table, languages in possible_tables if human in table]) == 1, "Must_seat_{}".format(human)
 
