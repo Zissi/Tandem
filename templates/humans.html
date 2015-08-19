@@ -3,15 +3,16 @@
 <title>Humans</title>
 <body>
     <h1>People</h1>
+    <form action="." method="POST">
         <div>
             {% for human in humans %}
-        <p><b>{{ human|e }}</b></p>
+        <p><b>{{ human|e }}</b> <input type=submit name='btn' value=X human={{ human|e }}></p>
         <p>learning: {% for llanguage in human.learning_languages %}{{ llanguage|e }} {% endfor %} teaching: {% for tlanguage in human.teaching_languages %}{{ tlanguage|e }} {% endfor %}</p>
             {% endfor %}
         </div>
 
     <h1>New</h1>
-    <form action="." method="POST">
+
         <p>Enter name:</p>
         <p><input type=text size=30 name=name></p>
         <p>Enter learning languages, level:</p>

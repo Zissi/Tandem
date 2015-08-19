@@ -31,8 +31,11 @@ def my_form_post():
         return enter_new_human(request)
     elif request.form['btn'] == 'DeleteAll':
         return delete_all_humans()
+    elif request.form['btn'] == 'X':
+        return delete_human(request)
 
-
+def delete_human(req):
+    return render_template('humans.html', humans=HUMANS)
 
 @app.route('/results')
 def show_results():
