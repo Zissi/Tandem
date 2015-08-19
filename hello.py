@@ -2,7 +2,7 @@ from humans import Human
 from tandem import calculate_tables
 
 __author__ = 'franziska'
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
@@ -24,6 +24,7 @@ def hello():
     return render_template('humans.html', humans=HUMANS)
 
 
+
 @app.route('/tandem/', methods=['POST'])
 def my_form_post():
     if request.form['btn'] == 'Submit':
@@ -31,7 +32,13 @@ def my_form_post():
     elif request.form['btn'] == 'DeleteAll':
         return delete_all_humans()
     elif request.form['btn'] == 'Calculate':
-        return render_template('result.html', tables=calculate_tables(HUMANS, MAX_TABLE_SIZE))
+        return redirect('/results')
+
+
+
+@app.route('/results')
+def show_results():
+    return render_template('result.html', tables=calculate_tables(HUMANS, MAX_TABLE_SIZE))
 
 
 def delete_all_humans():
