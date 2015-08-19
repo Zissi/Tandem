@@ -1,10 +1,17 @@
 <!doctype html>
 <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <title>Language Tables</title>
-    <h1>Language Tables:</h1>
-      <div>
-    {% for table in tables %}
-        <p>{% for human in table[0] %}<b>{{ human|e }}</b> {% endfor %}</p>
-        <p>languages: {% for language in table[1] %}{{ language|e }} {% endfor %}</p>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <legend>Language Tables</legend>
+            <ul class="list-group">
+                {% for table in tables %}
+	                <li class="list-group-item">{% for human in table[0] %}<b>{{ human|e }}</b> {% endfor %}</li>
+	                <li class="list-group-item">languages: {% for language in table[1] %}{{ language|e }} {% endfor %}</li>
+	            {% endfor %}
+            </ul>
+        </div>
     </div>
-    {% endfor %}
+</body>

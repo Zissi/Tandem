@@ -29,10 +29,10 @@ def my_form_post():
     if request.form.get('remove') is not None:
         return delete_human(request)
 
-    if request.form.get('btn') == 'Submit':
+    if request.form.get('btn') == 'save':
         return enter_new_human(request)
 
-    if request.form.get('btn') == 'DeleteAll':
+    if request.form.get('btn') == 'delete_all':
         return delete_all_humans()
 
 def delete_human(req):
