@@ -1,17 +1,19 @@
 <!DOCTYPE html>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <title>Humans</title>
 <body>
     <h1>People</h1>
-    <dl>
-        {% for human in humans %}
-        <dt><b>{{ human|e }}</b></dt>
-        <dt>learning: {% for llanguage in human.learning_languages %}{{ llanguage|e }} {% endfor %} teaching: {% for tlanguage in human.teaching_languages %}{{ tlanguage|e }} {% endfor %}</dt>
+        <div>{% for human in humans %}
+        <p><b>{{ human|e }}</b></p>
+        <p>learning: {% for llanguage in human.learning_languages %}{{ llanguage|e }} {% endfor %} teaching: {% for tlanguage in human.teaching_languages %}{{ tlanguage|e }} {% endfor %}</p>
         {% endfor %}
-    </dl>
-    <form action="." method="POST">
-      <dl>
+        </div>
+
+
     <h1>New</h1>
+    <dl>
         <dt>Enter name:
+          <form action="." method="POST">
         <dd><input type=text size=30 name=name>
         <dt>Enter learning languages, level:
         <dd><input type=text size=30 name=learning>

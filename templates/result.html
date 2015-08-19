@@ -1,9 +1,10 @@
 <!doctype html>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <title>Language Tables</title>
     <h1>Language Tables:</h1>
       <dl>
     {% for table in tables %}
-        <dt>{% for human in table[0] %}{{ human|e }} {% endfor %}</dt>
-        <dt>languages: {% for language in table[1] %}{{ language|e }} {% endfor %}</dt>
+        <p>{% for human in table[0] %}<b>{{ human|e }}</b> {% endfor %}</p>
+        <p>languages: {% for language in table[1] %}{{ language|e }} {% endfor %}</p>
     </dl>
     {% endfor %}
