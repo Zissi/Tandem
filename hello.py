@@ -20,6 +20,18 @@ def hello():
 
 @app.route('/hello/', methods=['POST'])
 def my_form_post():
+    if request.form['btn'] == 'Submit':
+        return enter_new_human(request)
+    elif request.form['btn'] == 'DeleteAll':
+        return delete_all_humans(request)
+
+
+def delete_all_humans(request):
+    del HUMANS[:]
+    return render_template('hello.html', humans=HUMANS)
+
+
+def enter_new_human(request):
     text = request.form['name'], request.form['learning'], request.form['teaching']
     learning_languages = get_learning_languages(text)
     teaching_languages = get_teaching_languages(text)
