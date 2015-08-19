@@ -31,8 +31,6 @@ def my_form_post():
         return enter_new_human(request)
     elif request.form['btn'] == 'DeleteAll':
         return delete_all_humans()
-    elif request.form['btn'] == 'Calculate':
-        return redirect('/results')
 
 
 

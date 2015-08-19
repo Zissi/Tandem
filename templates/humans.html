@@ -3,26 +3,26 @@
 <title>Humans</title>
 <body>
     <h1>People</h1>
-        <div>{% for human in humans %}
+        <div>
+            {% for human in humans %}
         <p><b>{{ human|e }}</b></p>
         <p>learning: {% for llanguage in human.learning_languages %}{{ llanguage|e }} {% endfor %} teaching: {% for tlanguage in human.teaching_languages %}{{ tlanguage|e }} {% endfor %}</p>
-        {% endfor %}
+            {% endfor %}
         </div>
 
-
     <h1>New</h1>
-    <dl>
-        <dt>Enter name:
-          <form action="." method="POST">
-        <dd><input type=text size=30 name=name>
-        <dt>Enter learning languages, level:
-        <dd><input type=text size=30 name=learning>
-        <dt>Enter teaching languages:
-        <dd><input type=text size=30 name=teaching>
-        <dd><input type=submit name='btn' value=Submit>
-      </dl>
-      <input type=submit name='btn' value=Calculate><input type=submit name='btn' value=DeleteAll>
-
+    <form action="." method="POST">
+        <p>Enter name:</p>
+        <p><input type=text size=30 name=name></p>
+        <p>Enter learning languages, level:</p>
+        <p><input type=text size=30 name=learning></p>
+        <p>Enter teaching languages:</p>
+        <p><input type=text size=30 name=teaching></p>
+        <p><input type=submit name='btn' value=Submit><input type=submit name='btn' value=DeleteAll></p>
     </form>
+    <form action="/results" method="GET">
+        <p><input type=submit name='btn' value=Calculate></p>
+    </form>
+
 </body>
 </html>
