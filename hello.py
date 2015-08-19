@@ -23,10 +23,14 @@ def my_form_post():
     text = request.form['name'], request.form['learning'], request.form['teaching']
     learning_languages = get_learning_languages(text)
     teaching_languages = get_teaching_languages(text)
-    human = Human(name=text[0], learning_languages=learning_languages, teaching_languages=teaching_languages)
-    HUMANS.append(human)
+    make_new_human(text[0], learning_languages, teaching_languages)
     print(teaching_languages, learning_languages)
     return render_template('hello.html', humans=HUMANS)
+
+
+def make_new_human(name, learning_languages, teaching_languages):
+    human = Human(name=name, learning_languages=learning_languages, teaching_languages=teaching_languages)
+    HUMANS.append(human)
 
 
 def get_learning_languages(text):
