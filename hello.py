@@ -19,32 +19,32 @@ def hello_world():
     return 'Hello World!'
 
 
-@app.route('/hello/')
+@app.route('/tandem/')
 def hello():
-    return render_template('hello.html', humans=HUMANS)
+    return render_template('humans.html', humans=HUMANS)
 
 
-@app.route('/hello/', methods=['POST'])
+@app.route('/tandem/', methods=['POST'])
 def my_form_post():
     if request.form['btn'] == 'Submit':
         return enter_new_human(request)
     elif request.form['btn'] == 'DeleteAll':
-        return delete_all_humans(request)
+        return delete_all_humans()
     elif request.form['btn'] == 'Calculate':
         return render_template('result.html', tables=calculate_tables(HUMANS, MAX_TABLE_SIZE))
 
 
-def delete_all_humans(request):
+def delete_all_humans():
     del HUMANS[:]
-    return render_template('hello.html', humans=HUMANS)
+    return render_template('humans.html', humans=HUMANS)
 
 
-def enter_new_human(request):
-    text = request.form['name'], request.form['learning'], request.form['teaching']
+def enter_new_human(r):
+    text = r.form['name'], r.form['learning'], r.form['teaching']
     learning_languages = get_learning_languages(text)
     teaching_languages = get_teaching_languages(text)
     make_new_human(text[0], learning_languages, teaching_languages)
-    return render_template('hello.html', humans=HUMANS)
+    return render_template('humans.html', humans=HUMANS)
 
 
 def make_new_human(name, learning_languages, teaching_languages):

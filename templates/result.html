@@ -1,7 +1,9 @@
 <!doctype html>
-<title>Hello from Flask</title>
+<title>Language Tables</title>
+    <h1>Language Tables:</h1>
       <dl>
     {% for table in tables %}
-        <dt>{{ table|e }}</dt>
-    {% endfor %}
+        <dt>{% for human in table[0] %}{{ human|e }} {% endfor %}</dt>
+        <dt>languages: {% for language in table[1] %}{{ language|e }} {% endfor %}</dt>
     </dl>
+    {% endfor %}

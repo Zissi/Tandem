@@ -78,7 +78,7 @@ def unhappiness(table, language_combination):
                 ranking_unhappiness += idx
                 levels.append(level)
                 break
-
+ #   levels = [int(i) for i in levels]
  #   levels = np.array(levels)
  #   levels = levels / max(levels)
  #   level_unhappiness = np.std(levels)
