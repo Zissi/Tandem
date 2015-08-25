@@ -13,19 +13,15 @@ HUMANS = [Human(name='anna', learning_languages=[('german', 10)], teaching_langu
 
 MAX_TABLE_SIZE = 4
 
+
 @app.route('/')
-def hello_world():
-    return 'Hello World!'
-
-
-@app.route('/tandem/')
-def hello():
+def add_humans():
     return render_template('humans.html', humans=HUMANS)
 
 
 
-@app.route('/tandem/', methods=['POST'])
-def my_form_post():
+@app.route('/', methods=['POST'])
+def humans_post():
     if request.form.get('remove') is not None:
         return delete_human(request)
 
@@ -53,10 +49,14 @@ def delete_all_humans():
 
 
 def enter_new_human(r):
-    text = r.form['name'], r.form['learning'], r.form['teaching']
-    learning_languages = get_learning_languages(text)
-    teaching_languages = get_teaching_languages(text)
-    make_new_human(text[0], learning_languages, teaching_languages)
+    name = r.form['name']
+    learning_languages = r.form['learning']
+    teaching_languages = r.form['teaching']
+
+    learning_languages = parse_learning_languages(learning_languages)
+    teaching_languages = prase_teaching_languages(teaching_languages)
+    name = normalize(name)
+    make_new_human(name, learning_languages, teaching_languages)
     return render_template('humans.html', humans=HUMANS)
 
 
@@ -65,16 +65,26 @@ def make_new_human(name, learning_languages, teaching_languages):
     HUMANS.append(human)
 
 
-def get_learning_languages(text):
-    no_white = text[1].replace(" ", "")
-    learning_languages = no_white.split(',')
-    it = iter(learning_languages)
-    return list(zip(it, it))
+def parse_learning_languages(langs_string):
+    splitted = langs_string.split(',')
+
+    langs = []
+    for idx in range(0, len(splitted), 2):
+        lang, level = splitted[idx:idx + 2]
+        lang = normalize(lang)
+        level = normalize(level)
+        langs.append((lang, level))
+
+    return langs
 
 
-def get_teaching_languages(text):
-    no_white = text[2].replace(" ", "")
-    return no_white.split(',')
+def prase_teaching_languages(langs_string):
+    return [normalize(l) for l in langs_string.split(',')]
+
+
+def normalize(string):
+    return string.strip().lower()
+
 
 if __name__ == '__main__':
     app.run(debug=True)
