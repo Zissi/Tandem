@@ -1,5 +1,5 @@
 from humans import Human
-from tandem import calculate_tables
+from tandem import get_seatings
 
 from flask import Flask, render_template, request
 
@@ -9,7 +9,9 @@ HUMANS = [Human(name='anna', learning_languages=[('german', 10)], teaching_langu
           Human(name='bert', learning_languages=[('english', 2), ('french', 2)], teaching_languages=['german']),
           Human(name='clara', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french']),
           Human(name='dirk', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french']),
-          Human(name='erik', learning_languages=[('greek', 2), ('french', 2)], teaching_languages=['german'])]
+          Human(name='erik', learning_languages=[('greek', 2), ('french', 2)], teaching_languages=['german']),
+          Human(name='francisca', learning_languages=[('arabic', 2), ('hausa', 2)], teaching_languages=['turkish']),
+          Human(name='günther', learning_languages=[('arabic', 2), ('hausa', 2)], teaching_languages=['turkish'])]
 
 MAX_TABLE_SIZE = 4
 
@@ -40,7 +42,8 @@ def delete_human(req):
 
 @app.route('/results')
 def show_results():
-    return render_template('result.html', tables=calculate_tables(HUMANS, MAX_TABLE_SIZE))
+    tables, unseated = get_seatings(HUMANS, MAX_TABLE_SIZE)
+    return render_template('result.html', tables=tables, unseated=unseated)
 
 
 def delete_all_humans():
@@ -54,7 +57,7 @@ def enter_new_human(r):
     teaching_languages = r.form['teaching']
 
     learning_languages = parse_learning_languages(learning_languages)
-    teaching_languages = prase_teaching_languages(teaching_languages)
+    teaching_languages = parse_teaching_languages(teaching_languages)
     name = normalize(name)
     make_new_human(name, learning_languages, teaching_languages)
     return render_template('humans.html', humans=HUMANS)
@@ -78,13 +81,13 @@ def parse_learning_languages(langs_string):
     return langs
 
 
-def prase_teaching_languages(langs_string):
+def parse_teaching_languages(langs_string):
     return [normalize(l) for l in langs_string.split(',')]
 
 
 def normalize(string):
     return string.strip().lower()
-
-
+    
+    
 if __name__ == '__main__':
     app.run(debug=True)

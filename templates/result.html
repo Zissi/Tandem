@@ -15,6 +15,21 @@
 	                        {% for human in table[0] %}{{ human|e }}{% if not loop.last%}, {% endif %}{% endfor %}
 	                    </li>
 		            {% endfor %}
+		            {% if unseated %}
+		            	<li class="list-group-item">
+	                        <b>Unseated</b>
+	                        </br>
+	                        {% for human in unseated %}
+	                        	{{ human|e }} 
+	                        	(learning: 
+	                        	{% for learning in human.learning_languages %}
+	                        		{{ learning[0]|e }} ({{ learning[1]|e }}){% if not loop.last%}, {% endif %}{% endfor %}, teaching: 
+	                        	{% for teaching in human.teaching_languages %}
+	                        		{{ teaching|e }}{% if not loop.last%}, {% endif %}{% endfor %})
+	                        	{% if not loop.last%}</br> {% endif %}
+	                        {% endfor %}
+	                    </li>
+		            {% endif %}
 	            </ul>
 	        </div>
         </div>

@@ -12,7 +12,9 @@ HUMANS = [Human(name='anna', learning_languages=[('german', 10)], teaching_langu
           Human(name='bert', learning_languages=[('english', 2), ('french', 2)], teaching_languages=['german']),
           Human(name='clara', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french']),
           Human(name='dirk', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french']),
-          Human(name='erik', learning_languages=[('greek', 2), ('french', 2)], teaching_languages=['german'])]
+          Human(name='erik', learning_languages=[('greek', 2), ('french', 2)], teaching_languages=['german']),
+          Human(name='francisca', learning_languages=[('arabic', 2), ('hausa', 2)], teaching_languages=['turkish']),
+          ]
 
 
 def _table_languages(table):
@@ -122,27 +124,47 @@ def _max_difference(levels):
 
 def calculate_tables(humans, max_table_size):
     possible_tables = list(language_tables(humans, max_table_size))
-
-    x = pulp.LpVariable.dicts('table', possible_tables,
-                                lowBound=0,
-                                upBound=1,
-                                cat=pulp.LpInteger)
-
-    seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
-    seating_model += pulp.lpSum([unhappiness(*language_table) * x[language_table] for language_table in possible_tables])
-    for human in humans:
-        seating_model += pulp.lpSum([x[(table, languages)] for table, languages in possible_tables if human in table]) == 1, "Must_seat_{}".format(human)
-
-    #solver = pulp.solvers.CPLEX()
-    #seating_model.solve(solver)
+    is_seated = pulp.LpVariable.dicts('table',
+                                      possible_tables,
+                                      lowBound=0,
+                                      upBound=1,
+                                      cat=pulp.LpInteger)
+    seating_model = make_ilp_model(humans, is_seated, possible_tables)
     seating_model.solve()
+    
+    return optimized_tables(possible_tables, is_seated)
+    
+    
+def get_seatings(all_humans, max_table_size):
+    results = calculate_tables(all_humans, max_table_size)
+    seated_humans = set()
+    for humans, _ in results:
+        seated_humans.update(humans)
+    not_matched = [human for human in all_humans if human not in seated_humans]
+    return results, not_matched
+    
 
-    final_tables = []
-    print("The choosen tables are")
+def optimized_tables(possible_tables, is_seated):
+    optimized_tables = []
+    print("The chosen tables are")
     for language_table in possible_tables:
-        if x[language_table].value() == 1.0:
-            final_tables.append(language_table)
+        if is_seated[language_table].value() == 1.0:
+            optimized_tables.append(language_table)
             print(language_table[0])
             print(language_table[1])
-    return final_tables
+    return optimized_tables
 
+
+def make_ilp_model(humans, is_seated, possible_tables):
+    seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
+    seating_model += pulp.lpSum([unhappiness(*language_table) * is_seated[language_table] 
+                                 for language_table in possible_tables])
+    for human in humans:
+        seating_model += (pulp.lpSum([is_seated[(table, languages)] 
+                                     for table, languages in possible_tables if human in table]) == 1,
+                          "Must_seat_{}".format(human))
+        
+    return seating_model
+
+if __name__ == '__main__':
+    get_seatings(HUMANS, MAX_TABLE_SIZE)
