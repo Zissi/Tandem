@@ -7,12 +7,12 @@ from tandem import HUMANS, MAX_TABLE_SIZE, MAX_DIFFERENCE, Seater
 
 class SymmetricSeater(Seater):
     
-    def _filtered_tables(self):
-        for table in self._tables():
-            languages = _table_languages(table)
-            for language_combination in languages:
-                if _acceptable_level_difference(table, language_combination):
-                    yield (table, frozenset(language_combination))
+    @staticmethod
+    def _valid_table(table):
+        languages = _table_languages(table)
+        for language_combination in languages:
+            if _acceptable_level_difference(table, language_combination):
+                yield (table, frozenset(language_combination))
                     
     def _optimal_seatings(self):
         possible_tables = list(self._filtered_tables())

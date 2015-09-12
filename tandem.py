@@ -38,6 +38,12 @@ class Seater(abc.ABC):
         tables = pulp.allcombinations(self.humans, self.max_table_size)
         return [table for table in tables if len(table) > 1]
     
-    @abc.abstractmethod
     def _filtered_tables(self):
+        for table in self._tables():
+            if self._valid_table(table):
+                yield table
+                
+    @abc.abstractstaticmethod
+    def _valid_table(table):
         ...
+            

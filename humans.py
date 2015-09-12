@@ -7,3 +7,6 @@ class Human(object):
 
     def __repr__(self):
         return self.name
+    
+    def all_languages(self):
+        return set(self.teaching_languages + self.learning_languages)
