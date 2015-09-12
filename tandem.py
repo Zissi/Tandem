@@ -17,11 +17,12 @@ MAX_TABLE_SIZE = 4
 MAX_DIFFERENCE = 1
 
 class Seater(abc.ABC):
-    
-    def __init__(self, humans, max_table_size):
+
+    def __init__(self, humans, max_table_size, max_level_difference):
         self.humans = humans
         self.max_table_size = max_table_size
-        
+        self.max_level_difference = max_level_difference
+
     def seat(self):
         seatings = self._optimal_seatings()
         seated_humans = set()
@@ -29,7 +30,7 @@ class Seater(abc.ABC):
             seated_humans.update(humans)
         not_matched = [human for human in self.humans if human not in seated_humans]
         return seatings, not_matched
-    
+
     @abc.abstractmethod
     def _optimal_seatings(self):
         ...
@@ -37,13 +38,40 @@ class Seater(abc.ABC):
     def _tables(self):
         tables = pulp.allcombinations(self.humans, self.max_table_size)
         return [table for table in tables if len(table) > 1]
-    
+
     def _filtered_tables(self):
         for table in self._tables():
-            if self._valid_table(table):
-                yield table
-                
+            tables_with_languages = self._valid_tables_with_languages(table)
+            for table, language_combination in tables_with_languages:
+                if _acceptable_level_difference(table,
+                                                language_combination,
+                                                self.max_level_difference):
+                    yield table, language_combination
+
     @abc.abstractstaticmethod
-    def _valid_table(table):
+    def _valid_tables_with_languages(table):
         ...
-            
+
+
+def _acceptable_level_difference(table, languages, max_difference):
+    for language in languages:
+        levels = _learning_levels(table, language)
+        if _max_difference(levels) > max_difference:
+            return False
+
+    return True
+
+
+def _learning_levels(table, language):
+    levels = []
+    for human in table:
+        for learning_language, level in human.learning_languages:
+            if learning_language == language:
+                levels.append(level)
+                break
+    return levels
+
+
+def _max_difference(levels):
+    levels = [int(i) for i in levels]
+    return max(levels) - min(levels)

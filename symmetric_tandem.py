@@ -3,17 +3,19 @@ from itertools import product
 import numpy as np
 import pulp
 
-from tandem import HUMANS, MAX_TABLE_SIZE, MAX_DIFFERENCE, Seater
+from tandem import HUMANS, MAX_TABLE_SIZE, MAX_DIFFERENCE, Seater, \
+    _acceptable_level_difference
 
 class SymmetricSeater(Seater):
-    
-    @staticmethod
-    def _valid_table(table):
+
+    def _valid_tables_with_languages(self, table):
         languages = _table_languages(table)
         for language_combination in languages:
-            if _acceptable_level_difference(table, language_combination):
+            if _acceptable_level_difference(table,
+                                            language_combination,
+                                            self.max_level_difference):
                 yield (table, frozenset(language_combination))
-                    
+
     def _optimal_seatings(self):
         possible_tables = list(self._filtered_tables())
         is_seated = pulp.LpVariable.dicts('table',
@@ -23,9 +25,9 @@ class SymmetricSeater(Seater):
                                           cat=pulp.LpInteger)
         seating_model = make_ilp_model(self.humans, is_seated, possible_tables)
         seating_model.solve()
-        
+
         return optimized_tables(possible_tables, is_seated)
-    
+
 
 def _table_languages(table):
     language_combinations = _get_overlapping_languages(table)
@@ -98,30 +100,6 @@ def unhappiness(table, language_combination):
     return total_unhappiness
 
 
-def _acceptable_level_difference(table, language_combination):
-    for language in language_combination:
-        levels = _learning_levels(table, language)
-        if _max_difference(levels) > MAX_DIFFERENCE:
-            return False
-
-    return True
-
-
-def _learning_levels(table, language):
-    levels = []
-    for human in table:
-        for learning_language, level in human.learning_languages:
-            if learning_language == language:
-                levels.append(level)
-                break
-    return levels
-
-
-def _max_difference(levels):
-    levels = [int(i) for i in levels]
-    return max(levels) - min(levels)
-    
-
 def optimized_tables(possible_tables, is_seated):
     optimized_tables = []
     print("The chosen tables are")
@@ -135,15 +113,15 @@ def optimized_tables(possible_tables, is_seated):
 
 def make_ilp_model(humans, is_seated, possible_tables):
     seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
-    seating_model += pulp.lpSum([unhappiness(*language_table) * is_seated[language_table] 
+    seating_model += pulp.lpSum([unhappiness(*language_table) * is_seated[language_table]
                                  for language_table in possible_tables])
     for human in humans:
-        seating_model += (pulp.lpSum([is_seated[(table, languages)] 
+        seating_model += (pulp.lpSum([is_seated[(table, languages)]
                                      for table, languages in possible_tables if human in table]) == 1,
                           "Must_seat_{}".format(human))
-        
+
     return seating_model
 
 if __name__ == '__main__':
-    seater = SymmetricSeater(HUMANS, MAX_TABLE_SIZE)
+    seater = SymmetricSeater(HUMANS, MAX_TABLE_SIZE, MAX_DIFFERENCE)
     print(seater.seat())

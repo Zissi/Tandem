@@ -1,19 +1,21 @@
 from tandem import Seater
 
 class AsymmetricSeater(Seater):
-    
+
     @staticmethod
-    def _valid_table(table):
+    def _valid_tables_with_languages(table):
         common_languages = table[0].all_languages()
         for human in table[1:]:
             common_languages &= human.all_languages()
             if not common_languages:
                 return False
-            
+
         languages = _languages_with_teachers_and_pupils(table, common_languages)
-        yield from ((language, table) for language in languages)
-        
-        
+        for language in languages:
+            language_combination = frozenset((language,))
+            yield table, language_combination
+
+
 def _languages_with_teachers_and_pupils(table, common_languages):
     has_teachers = False
     has_pupils = False
@@ -25,10 +27,10 @@ def _languages_with_teachers_and_pupils(table, common_languages):
                 has_pupils = True
             if has_pupils and has_teachers:
                 yield language
-            
 
-            
-            
-            
-    
-    
+
+
+
+
+
+
