@@ -1,0 +1,67 @@
+<!doctype html>
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<title>Language Tables</title>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+	            <legend>Language Tables</legend>
+	            <div class="col-md-6">
+	            <legend>Round 1</legend>
+		            <ul class="list-group">
+		                {% for table in round1 %}
+		                    <li class="list-group-item">
+		                        <b>Table {{loop.index}} ({% for language in table[1] %}{{ language }}{% if not loop.last%} &harr; {% endif %}{% endfor %})</b>
+		                        </br>
+		                        {% for human in table[0] %}{{ human|e }}{% if not loop.last%}, {% endif %}{% endfor %}
+		                    </li>
+			            {% endfor %}
+			            {% if unseated_round_1 %}
+			            	<li class="list-group-item">
+		                        <b>Unseated</b>
+		                        </br>
+		                        {% for human in unseated_round_1 %}
+		                        	{{ human|e }} 
+		                        	(learning: 
+		                        	{% for learning in human.learning_languages %}
+		                        		{{ learning[0]|e }} ({{ learning[1]|e }}){% if not loop.last%}, {% endif %}{% endfor %}, teaching: 
+		                        	{% for teaching in human.teaching_languages %}
+		                        		{{ teaching|e }}{% if not loop.last%}, {% endif %}{% endfor %})
+		                        	{% if not loop.last%}</br> {% endif %}
+		                        {% endfor %}
+		                    </li>
+			            {% endif %}
+		            </ul>
+	            </div>
+                <div class="col-md-6">
+                <legend>Round 2</legend>
+                    <ul class="list-group">
+                        {% for table in round2 %}
+                            <li class="list-group-item">
+                                <b>Table {{loop.index}} ({% for language in table[1] %}{{ language }}{% if not loop.last%} &harr; {% endif %}{% endfor %})</b>
+                                </br>
+                                {% for human in table[0] %}{{ human|e }}{% if not loop.last%}, {% endif %}{% endfor %}
+                            </li>
+                        {% endfor %}
+                        {% if unseated_round_2 %}
+                            <li class="list-group-item">
+                                <b>Unseated</b>
+                                </br>
+                                {% for human in unseated_round_2 %}
+                                    {{ human|e }} 
+                                    (learning: 
+                                    {% for learning in human.learning_languages %}
+                                        {{ learning[0]|e }} ({{ learning[1]|e }}){% if not loop.last%}, {% endif %}{% endfor %}, teaching: 
+                                    {% for teaching in human.teaching_languages %}
+                                        {{ teaching|e }}{% if not loop.last%}, {% endif %}{% endfor %})
+                                    {% if not loop.last%}</br> {% endif %}
+                                {% endfor %}
+                            </li>
+                        {% endif %}
+                    </ul>
+                </div>	            
+	        </div>
+        </div>
+    </div>
+</body>
