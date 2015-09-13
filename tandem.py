@@ -26,14 +26,16 @@ class Seater(abc.ABC):
     def seat(self):
         possible_tables = list(self._filtered_tables())
         seatings = self._optimal_seatings(possible_tables)
-        seated_humans = set()
-        for humans, _ in seatings:
-            seated_humans.update(humans)
-        not_matched = [human for human in self.humans if human not in seated_humans]
+        not_matched = self._not_matched(seatings)
+
         return seatings, not_matched
 
     @abc.abstractmethod
     def _optimal_seatings(self, possible_tables):
+        ...
+        
+    @abc.abstractmethod
+    def _not_matched(self, seatings):
         ...
 
     def _tables(self):

@@ -36,6 +36,15 @@ class AsymmetricSeater(Seater):
         
         return _optimized_tables(possible_tables, is_seated)
     
+    def _not_matched(self, seatings):
+        seated_humans_round_1 = set()
+        seated_humans_round_2 = set()
+        for (humans_1, _), (humans_2, _) in zip(*seatings):
+            seated_humans_round_1.update(humans_1)
+            seated_humans_round_2.update(humans_2)
+        not_matched = [human for human in self.humans if human not in seated_humans_round_1 and human not in seated_humans_round_2]
+        return not_matched
+    
 
 def _languages_with_teachers_and_pupils(table, common_languages):
     for language in common_languages:
@@ -142,12 +151,12 @@ def _optimized_tables(possible_tables, is_seated_ilp):
     print("ROUND II")
     pprint.pprint(all_round2)
 
-    return tables
+    return all_round1, all_round2
 
 
 if __name__ == '__main__':
     seater = AsymmetricSeater(HUMANS, MAX_TABLE_SIZE, MAX_DIFFERENCE)
-    seater.seat()
+    print(seater.seat())
 
 
 

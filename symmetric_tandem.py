@@ -26,6 +26,13 @@ class SymmetricSeater(Seater):
         seating_model.solve()
 
         return optimized_tables(possible_tables, is_seated)
+    
+    def _not_matched(self, seatings):
+        seated_humans = set()
+        for humans, _ in seatings:
+            seated_humans.update(humans)
+        not_matched = [human for human in self.humans if human not in seated_humans]
+        return not_matched
 
 
 def _table_languages(table):
