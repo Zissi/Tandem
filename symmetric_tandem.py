@@ -22,10 +22,10 @@ class SymmetricSeater(Seater):
                                           lowBound=0,
                                           upBound=1,
                                           cat=pulp.LpInteger)
-        seating_model = make_ilp_model(self.humans, is_seated, possible_tables)
+        seating_model = _make_ilp_model(self.humans, is_seated, possible_tables)
         seating_model.solve()
 
-        return optimized_tables(possible_tables, is_seated)
+        return _optimized_tables(possible_tables, is_seated)
     
     def _not_matched(self, seatings):
         seated_humans = set()
@@ -119,7 +119,7 @@ def _optimized_tables(possible_tables, is_seated):
 
 def _make_ilp_model(humans, is_seated, possible_tables):
     seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
-    seating_model += pulp.lpSum([unhappiness(*language_table) * is_seated[language_table]
+    seating_model += pulp.lpSum([_unhappiness(*language_table) * is_seated[language_table]
                                  for language_table in possible_tables])
     for human in humans:
         seating_model += (pulp.lpSum([is_seated[(table, languages)]

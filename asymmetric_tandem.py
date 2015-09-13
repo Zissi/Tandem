@@ -42,8 +42,9 @@ class AsymmetricSeater(Seater):
         for (humans_1, _), (humans_2, _) in zip(*seatings):
             seated_humans_round_1.update(humans_1)
             seated_humans_round_2.update(humans_2)
-        not_matched = [human for human in self.humans if human not in seated_humans_round_1 and human not in seated_humans_round_2]
-        return not_matched
+        not_matched_round_1 = [human for human in self.humans if human not in seated_humans_round_1]
+        not_matched_round_2 = [human for human in self.humans if human not in seated_humans_round_2]
+        return not_matched_round_1, not_matched_round_2
     
 
 def _languages_with_teachers_and_pupils(table, common_languages):

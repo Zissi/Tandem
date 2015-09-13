@@ -1,7 +1,8 @@
 from humans import Human
-from tandem import get_seatings
 
 from flask import Flask, render_template, request
+from symmetric_tandem import SymmetricSeater
+from asymmetric_tandem import AsymmetricSeater
 
 app = Flask(__name__)
 
@@ -14,6 +15,7 @@ HUMANS = [Human(name='anna', learning_languages=[('german', 10)], teaching_langu
           Human(name='günther', learning_languages=[('arabic', 2), ('hausa', 2)], teaching_languages=['turkish'])]
 
 MAX_TABLE_SIZE = 4
+MAX_LEVEL_DIFFERENCE = 1
 
 
 @app.route('/')
@@ -40,10 +42,17 @@ def delete_human(req):
             HUMANS.pop(idx)
     return render_template('humans.html', humans=HUMANS)
 
-@app.route('/results')
-def show_results():
-    tables, unseated = get_seatings(HUMANS, MAX_TABLE_SIZE)
-    return render_template('result.html', tables=tables, unseated=unseated)
+@app.route('/results_symmetric')
+def show_symmetric_results():
+    seater = SymmetricSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
+    tables, unseated = seater.seat()
+    return render_template('result_symmetric.html', tables=tables, unseated=unseated)
+
+@app.route('/results_asymmetric')
+def show_asymmetric_results():
+    seater = AsymmetricSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
+    (round1, round2), (unseated_round_1, unseated_round_2) = seater.seat()
+    return render_template('result_asymmetric.html', round1=round1, round2=round2, unseated_round_1=unseated_round_1, unseated_round_2=unseated_round_2)
 
 
 def delete_all_humans():
