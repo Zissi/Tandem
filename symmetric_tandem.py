@@ -16,8 +16,7 @@ class SymmetricSeater(Seater):
                                             self.max_level_difference):
                 yield (table, frozenset(language_combination))
 
-    def _optimal_seatings(self):
-        possible_tables = list(self._filtered_tables())
+    def _optimal_seatings(self, possible_tables):
         is_seated = pulp.LpVariable.dicts('table',
                                           possible_tables,
                                           lowBound=0,
@@ -82,7 +81,7 @@ def _get_language_combinations(human):
     return {frozenset(combination) for combination in language_combinations}
 
 
-def unhappiness(table, language_combination):
+def _unhappiness(table, language_combination):
     ranking_unhappiness = 0
     levels = []
 
@@ -100,7 +99,7 @@ def unhappiness(table, language_combination):
     return total_unhappiness
 
 
-def optimized_tables(possible_tables, is_seated):
+def _optimized_tables(possible_tables, is_seated):
     optimized_tables = []
     print("The chosen tables are")
     for language_table in possible_tables:
@@ -111,7 +110,7 @@ def optimized_tables(possible_tables, is_seated):
     return optimized_tables
 
 
-def make_ilp_model(humans, is_seated, possible_tables):
+def _make_ilp_model(humans, is_seated, possible_tables):
     seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
     seating_model += pulp.lpSum([unhappiness(*language_table) * is_seated[language_table]
                                  for language_table in possible_tables])
