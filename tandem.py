@@ -10,7 +10,7 @@ HUMANS = [Human(name='anna', learning_languages=[('german', 10)], teaching_langu
           Human(name='clara', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french']),
           Human(name='dirk', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french']),
           Human(name='erik', learning_languages=[('greek', 2), ('french', 2)], teaching_languages=['german']),
-          #Human(name='francisca', learning_languages=[('arabic', 2), ('hausa', 2)], teaching_languages=['turkish']),
+          Human(name='francisca', learning_languages=[('arabic', 2), ('hausa', 2)], teaching_languages=['turkish']),
           ]
 
 MAX_TABLE_SIZE = 4
