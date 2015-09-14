@@ -23,6 +23,22 @@ class AsymmetricSeater(Seater):
 
     def _optimal_seatings(self, possible_tables):
         possible_tables = list(set(possible_tables))
+        impossible_humans = set()
+        for human in self.humans:
+            is_teacher = False
+            is_pupil = False
+            for table in possible_tables:
+                if human in table[0] and _is_pupil(human, table):
+                    is_pupil = True
+                    
+                if human in table[0] and _is_teacher(human, table[1]):
+                    is_teacher = True
+                    
+            if not (is_pupil and is_teacher):
+                impossible_humans.add(human)
+        
+        possible_tables = [(table, langs) for (table, langs) in possible_tables if not set(table) & impossible_humans]    
+        
         possible_tables = list(permutations(possible_tables, 2))
         
         is_seated = pulp.LpVariable.dicts('table',
