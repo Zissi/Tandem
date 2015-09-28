@@ -1,4 +1,6 @@
 .project
 .pydevproject
+.cache
+.idea
 *.pyc
 *~
