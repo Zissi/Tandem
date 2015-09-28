@@ -80,8 +80,8 @@ def _unhappiness(table1, table2):
     total_unhappiness = _ranking_unhappiness(*table1)
     total_unhappiness += _ranking_unhappiness(*table2)
 
-    total_unhappiness += len(table1[0]) * 10
-    total_unhappiness += len(table2[0]) * 10
+    total_unhappiness += len(table1[0]) * 0.001
+    total_unhappiness += len(table2[0]) * 0.001
 
     return total_unhappiness
 
