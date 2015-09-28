@@ -80,8 +80,8 @@ def _unhappiness(table1, table2):
     total_unhappiness = _ranking_unhappiness(*table1)
     total_unhappiness += _ranking_unhappiness(*table2)
 
-    total_unhappiness += len(table1[0]) * 0.001
-    total_unhappiness += len(table2[0]) * 0.001
+    total_unhappiness += 3 ** len(table1[0])
+    total_unhappiness += 3 ** len(table2[0])
 
     return total_unhappiness
 
@@ -90,7 +90,7 @@ def _ranking_unhappiness(table, language_combination):
     for human in table:
         for idx, (learning_language, _) in enumerate(human.learning_languages):
             if learning_language in language_combination:
-                ranking_unhappiness += idx
+                ranking_unhappiness += idx * 100
                 break
     return ranking_unhappiness
 

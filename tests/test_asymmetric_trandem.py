@@ -8,7 +8,7 @@ from tandem.asymmetric_tandem import AsymmetricSeater
 def humans_matching_small_and_big_groups():
     humans = [Human(name='anna', learning_languages=[('german', 10)], teaching_languages=['arabic']),
               Human(name='bert', learning_languages=[('german', 10)], teaching_languages=['arabic']),
-              Human(name='clara', learning_languages=[('other', 2), ('arabic', 2)], teaching_languages=['german']),
+              Human(name='clara', learning_languages=[('arabic', 2)], teaching_languages=['german']),
               Human(name='dirk', learning_languages=[('arabic', 2)], teaching_languages=['german'])]
     return humans
 
