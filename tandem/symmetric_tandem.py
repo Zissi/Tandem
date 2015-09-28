@@ -3,8 +3,8 @@ from itertools import product
 import numpy as np
 import pulp
 
-from tandem import HUMANS, MAX_TABLE_SIZE, MAX_DIFFERENCE, Seater, \
-    _acceptable_level_difference
+from tandem.tandem import (HUMANS, MAX_TABLE_SIZE, MAX_DIFFERENCE,
+                           Seater, _acceptable_level_difference)
 
 class SymmetricSeater(Seater):
 
@@ -26,7 +26,7 @@ class SymmetricSeater(Seater):
         seating_model.solve()
 
         return _optimized_tables(possible_tables, is_seated)
-    
+
     def _not_matched(self, seatings):
         seated_humans = set()
         for humans, _ in seatings:

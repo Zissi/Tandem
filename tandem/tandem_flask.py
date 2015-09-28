@@ -1,8 +1,8 @@
-from humans import Human
+from tandem.humans import Human
 
 from flask import Flask, render_template, request
-from symmetric_tandem import SymmetricSeater
-from asymmetric_tandem import AsymmetricSeater
+from tandem.symmetric_tandem import SymmetricSeater
+from tandem.asymmetric_tandem import AsymmetricSeater
 
 app = Flask(__name__)
 
@@ -96,7 +96,7 @@ def parse_teaching_languages(langs_string):
 
 def normalize(string):
     return string.strip().lower()
-    
-    
+
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,7 +1,7 @@
 import abc
 import pulp
 
-from humans import Human
+from tandem.humans import Human
 
 
 
@@ -33,7 +33,7 @@ class Seater(abc.ABC):
     @abc.abstractmethod
     def _optimal_seatings(self, possible_tables):
         ...
-        
+
     @abc.abstractmethod
     def _not_matched(self, seatings):
         ...
@@ -43,8 +43,10 @@ class Seater(abc.ABC):
         return [table for table in tables if len(table) > 1]
 
     def _filtered_tables(self):
-        for table in self._tables():
-            tables_with_languages = self._valid_tables_with_languages(table)
+        all_tables = self._tables()
+        for posible_table in all_tables:
+            tables_with_languages = self._valid_tables_with_languages(posible_table)
+            tables_with_languages = list(tables_with_languages)
             for table, language_combination in tables_with_languages:
                 if _acceptable_level_difference(table,
                                                 language_combination,
