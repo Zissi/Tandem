@@ -1,10 +1,15 @@
+from pathlib import Path
+
 from tandem.humans import Human
 
 from flask import Flask, render_template, request
 from tandem.symmetric_tandem import SymmetricSeater
 from tandem.asymmetric_tandem import AsymmetricSeater
 
-app = Flask(__name__)
+template_path = Path(__file__).parents[1] / 'templates'
+
+app = Flask(__name__,
+            template_folder=str(template_path))
 
 HUMANS = [Human(name='anna', learning_languages=[('german', 10)], teaching_languages=['french', 'english']),
           Human(name='bert', learning_languages=[('english', 2), ('french', 2)], teaching_languages=['german']),
