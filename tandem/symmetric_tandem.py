@@ -3,8 +3,8 @@ from itertools import product
 import numpy as np
 import pulp
 
-from tandem.tandem import (HUMANS, MAX_TABLE_SIZE, MAX_DIFFERENCE,
-                           Seater, _acceptable_level_difference)
+from tandem.base_tandem import (HUMANS, MAX_TABLE_SIZE, MAX_DIFFERENCE,
+                                Seater, _acceptable_level_difference)
 
 class SymmetricSeater(Seater):
 

@@ -1,6 +1,6 @@
 import pulp
 
-from tandem.tandem import Seater, HUMANS, MAX_DIFFERENCE, MAX_TABLE_SIZE
+from tandem.base_tandem import Seater, HUMANS, MAX_DIFFERENCE, MAX_TABLE_SIZE
 import pprint
 from itertools import permutations
 
