@@ -6,8 +6,7 @@ from flask import Flask, render_template, request
 from tandem.symmetric_tandem import SymmetricSeater
 from tandem.asymmetric_tandem import AsymmetricSeater
 
-template_path = Path(__file__).parents[1] / 'templates'
-
+template_path = (Path(__file__).parents[1] / 'templates').resolve()
 app = Flask(__name__,
             template_folder=str(template_path))
 
