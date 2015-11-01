@@ -1,7 +1,10 @@
 import abc
+
 import pulp
 
 from tandem.humans import Human
+from pulp.pulp import LpVariable
+import hashlib
 
 
 
@@ -32,7 +35,7 @@ class Seater(abc.ABC):
         self.max_level_difference = max_level_difference
 
     def seat(self):
-        possible_tables = list(self._filtered_tables())
+        possible_tables = self._filtered_tables()
         seatings = self._optimal_seatings(possible_tables)
         not_matched = self._not_matched(seatings)
 
@@ -48,13 +51,12 @@ class Seater(abc.ABC):
 
     def _tables(self):
         tables = pulp.allcombinations(self.humans, self.max_table_size)
-        return [table for table in tables if len(table) > 1]
+        return (table for table in tables if len(table) > 1)
 
     def _filtered_tables(self):
         all_tables = self._tables()
         for posible_table in all_tables:
             tables_with_languages = self._valid_tables_with_languages(posible_table)
-            tables_with_languages = list(tables_with_languages)
             for table, language_combination in tables_with_languages:
                 if _acceptable_level_difference(table,
                                                 language_combination,
@@ -88,3 +90,24 @@ def _learning_levels(table, language):
 def _max_difference(levels):
     levels = [int(i) for i in levels]
     return max(levels) - min(levels)
+
+
+def hash_table(table):
+    sha = hashlib.sha1()
+    sha.update(repr(table).encode('utf8'))
+    return '_' + sha.hexdigest()[:10]
+
+
+def _table_lp_variable(lower_bound, upper_bound, category):
+    def _lp_variable(table):
+        name = hash_table(table)
+        return LpVariable(name,
+                          lowBound=lower_bound,
+                          upBound=upper_bound,
+                          cat=category)
+    return _lp_variable
+
+
+def lp_variable_dict(objs, lower_bound, upper_bound, category):
+    table_lp = _table_lp_variable(lower_bound, upper_bound, category)
+    return dict((obj, table_lp(obj)) for obj in objs)

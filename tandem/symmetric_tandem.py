@@ -119,11 +119,11 @@ def _optimized_tables(possible_tables, is_seated):
 
 def _make_ilp_model(humans, is_seated, possible_tables):
     seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
-    seating_model += pulp.lpSum([_unhappiness(*language_table) * is_seated[language_table]
-                                 for language_table in possible_tables])
+    seating_model += pulp.lpSum(_unhappiness(*language_table) * is_seated[language_table]
+                                for language_table in possible_tables)
     for human in humans:
-        seating_model += (pulp.lpSum([is_seated[(table, languages)]
-                                     for table, languages in possible_tables if human in table]) == 1,
+        seating_model += (pulp.lpSum(is_seated[(table, languages)]
+                                     for table, languages in possible_tables if human in table) == 1,
                           "Must_seat_{}".format(human))
 
     return seating_model

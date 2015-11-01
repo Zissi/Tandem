@@ -1,6 +1,8 @@
 import pulp
+from scip.pulp_scip import SCIP_CMD
 
-from tandem.base_tandem import Seater, HUMANS, MAX_DIFFERENCE, MAX_TABLE_SIZE
+from tandem.base_tandem import Seater, HUMANS, MAX_DIFFERENCE, MAX_TABLE_SIZE, \
+    lp_variable_dict
 import pprint
 from itertools import permutations
 
@@ -13,7 +15,7 @@ class AsymmetricSeater(Seater):
         for human in table[1:]:
             common_languages &= human.all_languages()
             if not common_languages:
-                return False
+                return
 
         languages = _languages_with_teachers_and_pupils(table, common_languages)
         for language in languages:
@@ -21,7 +23,7 @@ class AsymmetricSeater(Seater):
             yield table, language_combination
 
     def _optimal_seatings(self, possible_tables):
-        possible_tables = list(set(possible_tables))
+        possible_tables = set(possible_tables)
         impossible_humans = set()
         for human in self.humans:
             is_teacher = False
@@ -40,16 +42,16 @@ class AsymmetricSeater(Seater):
 
         possible_tables = list(permutations(possible_tables, 2))
 
-        is_seated = pulp.LpVariable.dicts('table',
-                                          possible_tables,
-                                          lowBound=0,
-                                          upBound=1,
-                                          cat=pulp.LpInteger)
+        is_seated = lp_variable_dict(possible_tables,
+                                     lower_bound=0,
+                                     upper_bound=1,
+                                     category=pulp.LpInteger)
 
         seating_model = _make_ilp_model(self.humans, is_seated, possible_tables)
-        seating_model.solve()
+        del(possible_tables)
+        seating_model.solve()#SCIP_CMD())
 
-        return _optimized_tables(possible_tables, is_seated)
+        return _optimized_tables(is_seated)
 
     def _not_matched(self, seatings):
         seated_humans_round_1 = set()
@@ -98,7 +100,6 @@ def _ilp_variables(human, possible_tables, is_seated_ilp):
     round1_variables = []
     round2_variables = []
     pupil_variables = []
-    teacher_variables = []
     
     for table_1, table_2 in possible_tables:
         if human in table_1[0]:
@@ -106,9 +107,6 @@ def _ilp_variables(human, possible_tables, is_seated_ilp):
             
             if _is_pupil(human, table_1[1]):
                 pupil_variables.append(is_seated_ilp[(table_1, table_2)])
-                
-            if _is_teacher(human, table_1[1]):
-                teacher_variables.append(is_seated_ilp[(table_1, table_2)])
             
         if human in table_2[0]:
             round2_variables.append(is_seated_ilp[(table_1, table_2)])
@@ -116,30 +114,26 @@ def _ilp_variables(human, possible_tables, is_seated_ilp):
             if _is_pupil(human, table_2[1]):
                 pupil_variables.append(is_seated_ilp[(table_1, table_2)])
                 
-            if _is_teacher(human, table_2[1]):
-                teacher_variables.append(is_seated_ilp[(table_1, table_2)])
-                
-    return round1_variables, round2_variables, pupil_variables, teacher_variables
+    return round1_variables, round2_variables, pupil_variables
                 
                 
 def _make_ilp_model(humans, is_seated_ilp, possible_tables):
     seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
-    seating_model += pulp.lpSum([_unhappiness(*language_table) * is_seated_ilp[language_table]
-                                 for language_table in possible_tables])
+    seating_model += pulp.lpSum(_unhappiness(*language_table) * is_seated_ilp[language_table]
+                                for language_table in possible_tables)
 
     for human in humans:
-        round1_variables, round2_variables, pupil_variables, teacher_variables = _ilp_variables(human,
-                                                                                                possible_tables,
-                                                                                                is_seated_ilp)
+        round1_variables, round2_variables, pupil_variables = _ilp_variables(human,
+                                                                             possible_tables,
+                                                                             is_seated_ilp)
         seating_model += (pulp.lpSum(round1_variables) == 1,
                           "Must_seat_exatcly_once_round1_{}".format(human))
 
         seating_model += (pulp.lpSum(round2_variables) == 1,
                           "Must_seat_exatcly_once_round2_{}".format(human))
+        
         seating_model += (pulp.lpSum(pupil_variables) == 1,
                           "Must_seat_as_pupil_{}".format(human))
-        seating_model += (pulp.lpSum(teacher_variables) == 1,
-                          "Must_seat_as_teacher_{}".format(human))
 
     return seating_model
 
@@ -156,11 +150,11 @@ def _is_pupil(human, table_language_combination):
     return not _is_teacher(human, table_language_combination)
 
 
-def _optimized_tables(possible_tables, is_seated_ilp):
+def _optimized_tables(is_seated_ilp):
     tables = []
     print("The chosen tables are")
-    for language_table in possible_tables:
-        if is_seated_ilp[language_table].value() == 1.0:
+    for language_table, var in is_seated_ilp.items():
+        if var.value() == 1.0:
             tables.append(language_table)
 
     all_round1 = []
