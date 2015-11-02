@@ -7,10 +7,12 @@ from tandem.symmetric_tandem import SymmetricGurobiSeater
 from tandem.asymmetric_tandem import AsymmetricGurobiSeater
 import csv
 
-base_path = Path(__file__).parents[0]
+file_path = Path(__file__).resolve()
+base_path = file_path.parents[0].resolve()
 backup_path = base_path / 'backup.tsv'
 default_path = base_path / 'default.tsv'
-template_path = Path(__file__).parents[1] / 'templates'
+template_path = file_path.parents[1] / 'templates'
+print(template_path)
 
 app = Flask(__name__,
             template_folder=str(template_path))
