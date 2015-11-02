@@ -3,7 +3,6 @@ import abc
 import pulp
 
 from tandem.humans import Human
-from pulp.pulp import LpVariable
 import hashlib
 
 
