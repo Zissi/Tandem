@@ -3,29 +3,66 @@ from pathlib import Path
 from tandem.humans import Human
 
 from flask import Flask, render_template, request
-from tandem.symmetric_tandem import SymmetricSeater
-from tandem.asymmetric_tandem import AsymmetricSeater
+from tandem.symmetric_tandem import SymmetricGurobiSeater
+from tandem.asymmetric_tandem import AsymmetricGurobiSeater
+import csv
 
-template_path = (Path(__file__).parents[1] / 'templates').resolve()
+file_path = Path(__file__).resolve()
+base_path = file_path.parents[0].resolve()
+backup_path = base_path / 'backup.tsv'
+default_path = base_path / 'default.tsv'
+template_path = file_path.parents[1] / 'templates'
+print(template_path)
+
 app = Flask(__name__,
             template_folder=str(template_path))
 
-HUMANS = [Human(name='anna', learning_languages=[('german', 10)], teaching_languages=['french', 'english']),
-          Human(name='bert', learning_languages=[('english', 2), ('french', 2)], teaching_languages=['german']),
-          Human(name='clara', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french']),
-          Human(name='dirk', learning_languages=[('german', 2), ('english', 2)], teaching_languages=['french']),
-          Human(name='erik', learning_languages=[('greek', 2), ('french', 2)], teaching_languages=['german']),
-          Human(name='francisca', learning_languages=[('arabic', 2), ('hausa', 2)], teaching_languages=['turkish']),
-          Human(name='günther', learning_languages=[('english', 2), ('hausa', 2)], teaching_languages=['turkish'])]
 
-MAX_TABLE_SIZE = 4
+def parse_learning_languages(langs_string):
+    splitted = langs_string.split(',')
+
+    langs = []
+    for idx in range(0, len(splitted), 2):
+        lang, level = splitted[idx:idx + 2]
+        lang = normalize(lang)
+        level = normalize(level)
+        langs.append((lang, level))
+
+    return langs
+
+
+def parse_teaching_languages(langs_string):
+    return [normalize(l) for l in langs_string.split(',')]
+
+
+def normalize(string):
+    return string.strip().lower()
+
+
+def _human_from_csv(csv_dict):
+    name = csv_dict['Name']
+    learning_languages = parse_learning_languages(csv_dict['Learning Languages'])
+    teaching_languages = parse_teaching_languages(csv_dict['Teaching Languages'])
+    return Human(name, learning_languages, teaching_languages)
+
+
+def _load_backup():
+    load_path = backup_path if backup_path.exists() else default_path
+    with load_path.open() as load_file:
+        reader = csv.DictReader(load_file, delimiter='\t')
+        for row in reader:
+            yield _human_from_csv(row)
+
+
+HUMANS = list(_load_backup())
+
+MAX_TABLE_SIZE = 3
 MAX_LEVEL_DIFFERENCE = 1
 
 
 @app.route('/')
 def add_humans():
     return render_template('humans.html', humans=HUMANS)
-
 
 
 @app.route('/', methods=['POST'])
@@ -39,6 +76,7 @@ def humans_post():
     if request.form.get('btn') == 'delete_all':
         return delete_all_humans()
 
+
 def delete_human(req):
     delete_name = req.form['remove']
     for idx, human in enumerate(HUMANS):
@@ -46,15 +84,19 @@ def delete_human(req):
             HUMANS.pop(idx)
     return render_template('humans.html', humans=HUMANS)
 
+
 @app.route('/results_symmetric')
 def show_symmetric_results():
-    seater = SymmetricSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
+    _save_backup()
+    seater = SymmetricGurobiSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
     tables, unseated = seater.seat()
     return render_template('result_symmetric.html', tables=tables, unseated=unseated)
 
+
 @app.route('/results_asymmetric')
 def show_asymmetric_results():
-    seater = AsymmetricSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
+    _save_backup()
+    seater = AsymmetricGurobiSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
     (round1, round2), (unseated_round_1, unseated_round_2) = seater.seat()
     return render_template('result_asymmetric.html', round1=round1, round2=round2, unseated_round_1=unseated_round_1, unseated_round_2=unseated_round_2)
 
@@ -79,27 +121,15 @@ def enter_new_human(r):
 def make_new_human(name, learning_languages, teaching_languages):
     human = Human(name=name, learning_languages=learning_languages, teaching_languages=teaching_languages)
     HUMANS.append(human)
+    
 
-
-def parse_learning_languages(langs_string):
-    splitted = langs_string.split(',')
-
-    langs = []
-    for idx in range(0, len(splitted), 2):
-        lang, level = splitted[idx:idx + 2]
-        lang = normalize(lang)
-        level = normalize(level)
-        langs.append((lang, level))
-
-    return langs
-
-
-def parse_teaching_languages(langs_string):
-    return [normalize(l) for l in langs_string.split(',')]
-
-
-def normalize(string):
-    return string.strip().lower()
+def _save_backup():
+    with backup_path.open('w') as backup_file:
+        cols = ('Name', 'Learning Languages', 'Teaching Languages')
+        writer = csv.DictWriter(backup_file, cols, delimiter='\t')
+        writer.writeheader()
+        for human in HUMANS:
+            writer.writerow(human.to_dict())
 
 
 if __name__ == '__main__':

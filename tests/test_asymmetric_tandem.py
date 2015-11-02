@@ -1,7 +1,8 @@
-from pytest import fixture
+from pytest import fixture, mark
 
 from tandem.humans import Human
-from tandem.asymmetric_tandem import AsymmetricSeater
+from tandem.asymmetric_tandem import AsymmetricPulpSeater,\
+    AsymmetricGurobiSeater
 
 
 @fixture
@@ -29,10 +30,11 @@ def humans_with_optimal_solution():
     return humans, solution
 
 
-def test_prefer_small_groups(humans_matching_small_and_big_groups):
-    target = AsymmetricSeater(humans_matching_small_and_big_groups,
-                              max_table_size=4,
-                              max_level_difference=0)
+@mark.parametrize("seater_class", [AsymmetricPulpSeater, AsymmetricGurobiSeater])
+def test_prefer_small_groups(seater_class, humans_matching_small_and_big_groups):
+    target = seater_class(humans_matching_small_and_big_groups,
+                          max_table_size=4,
+                          max_level_difference=0)
     actual = target.seat()
     (actual_first, actual_second), (unseated_first, unseated_second) = actual
 
@@ -43,11 +45,12 @@ def test_prefer_small_groups(humans_matching_small_and_big_groups):
     assert len(actual_first) == len(actual_second) == expected_table_size
 
 
-def test_finds_optimal_solution(humans_with_optimal_solution):
+@mark.parametrize("seater_class", [AsymmetricPulpSeater, AsymmetricGurobiSeater])
+def test_finds_optimal_solution(seater_class, humans_with_optimal_solution):
     humans, expected = humans_with_optimal_solution
-    target = AsymmetricSeater(humans,
-                              max_table_size=4,
-                              max_level_difference=0)
+    target = seater_class(humans,
+                          max_table_size=4,
+                          max_level_difference=0)
 
     actual = target.seat()
     (actual_first, actual_second), (unseated_first, unseated_second) = actual
