@@ -54,7 +54,7 @@ def _load_backup():
 
 HUMANS = list(_load_backup())
 
-MAX_TABLE_SIZE = 4
+MAX_TABLE_SIZE = 3
 MAX_LEVEL_DIFFERENCE = 1
 
 
