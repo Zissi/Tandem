@@ -74,6 +74,7 @@ def humans_post():
     if request.form.get('btn') == 'delete_all':
         return delete_all_humans()
 
+
 def delete_human(req):
     delete_name = req.form['remove']
     for idx, human in enumerate(HUMANS):
