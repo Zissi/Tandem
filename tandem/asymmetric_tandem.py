@@ -170,12 +170,5 @@ class AsymmetricGurobiSeater(BaseAsymmetricSeater, GurobiSeater):
 
 
 if __name__ == '__main__':
-    seater = AsymmetricPulpSeater(HUMANS, 3, 1)
+    seater = AsymmetricGurobiSeater(HUMANS, 3, 1)
     print(seater.seat())
-
-
-
-
-
-
-

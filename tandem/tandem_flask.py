@@ -56,7 +56,7 @@ def _load_backup():
 
 HUMANS = list(_load_backup())
 
-MAX_TABLE_SIZE = 4
+MAX_TABLE_SIZE = 3
 MAX_LEVEL_DIFFERENCE = 1
 
 
@@ -75,6 +75,7 @@ def humans_post():
 
     if request.form.get('btn') == 'delete_all':
         return delete_all_humans()
+
 
 def delete_human(req):
     delete_name = req.form['remove']
