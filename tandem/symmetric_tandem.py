@@ -1,12 +1,12 @@
 from itertools import product
 
 import numpy as np
-import pulp
 
-from tandem.base_tandem import (HUMANS, MAX_TABLE_SIZE, MAX_DIFFERENCE,
-                                Seater, _acceptable_level_difference)
+from tandem.base_tandem import HUMANS, Seater, _acceptable_level_difference
+from tandem.pulp_tandem import PulpSeater
+from tandem.gurobi_tandem import GurobiSeater
 
-class SymmetricSeater(Seater):
+class BaseSymmetricSeater(Seater):
 
     def _valid_tables_with_languages(self, table):
         languages = _table_languages(table)
@@ -17,15 +17,10 @@ class SymmetricSeater(Seater):
                 yield (table, frozenset(language_combination))
 
     def _optimal_seatings(self, possible_tables):
-        is_seated = pulp.LpVariable.dicts('table',
-                                          possible_tables,
-                                          lowBound=0,
-                                          upBound=1,
-                                          cat=pulp.LpInteger)
-        seating_model = _make_ilp_model(self.humans, is_seated, possible_tables)
-        seating_model.solve()
+        possible_tables = list(possible_tables)
+        is_seated, seating_model = self._solved_variables_and_model(possible_tables)
 
-        return _optimized_tables(possible_tables, is_seated)
+        return self._optimized_tables(is_seated, seating_model)
 
     def _not_matched(self, seatings):
         seated_humans = set()
@@ -33,7 +28,25 @@ class SymmetricSeater(Seater):
             seated_humans.update(humans)
         not_matched = [human for human in self.humans if human not in seated_humans]
         return not_matched
+    
+    def _make_ilp_model(self, seating_model, is_seated, possible_tables):
+        total_unhappiness = self._solver_sum(_unhappiness(*language_table) * is_seated[language_table]
+                                             for language_table in possible_tables)
+        seating_model = self._add_objective_function(total_unhappiness, seating_model)
 
+        for human in self.humans:
+            total_seatings = self._solver_sum(is_seated[(table, languages)]
+                                              for table, languages in possible_tables if human in table)
+            seating_model = self._add_constraint(total_seatings == 1, "Must_seat_{}".format(human), seating_model)
+    
+        return seating_model
+    
+    def _optimized_tables(self, is_seated, seating_model):
+        chosen_tables = self._chosen_tables(is_seated, seating_model)
+        chosen_tables = list(chosen_tables)
+        print(chosen_tables)
+        return chosen_tables
+    
 
 def _table_languages(table):
     language_combinations = _get_overlapping_languages(table)
@@ -106,28 +119,13 @@ def _unhappiness(table, language_combination):
     return total_unhappiness
 
 
-def _optimized_tables(possible_tables, is_seated):
-    optimized_tables = []
-    print("The chosen tables are")
-    for language_table in possible_tables:
-        if is_seated[language_table].value() == 1.0:
-            optimized_tables.append(language_table)
-            print(language_table[0])
-            print(language_table[1])
-    return optimized_tables
+class SymmetricPulpSeater(BaseSymmetricSeater, PulpSeater):
+    pass
 
 
-def _make_ilp_model(humans, is_seated, possible_tables):
-    seating_model = pulp.LpProblem("Tandem Seating Model", pulp.LpMinimize)
-    seating_model += pulp.lpSum(_unhappiness(*language_table) * is_seated[language_table]
-                                for language_table in possible_tables)
-    for human in humans:
-        seating_model += (pulp.lpSum(is_seated[(table, languages)]
-                                     for table, languages in possible_tables if human in table) == 1,
-                          "Must_seat_{}".format(human))
-
-    return seating_model
+class SymmetricGurobiSeater(BaseSymmetricSeater, GurobiSeater):
+    pass
 
 if __name__ == '__main__':
-    seater = SymmetricSeater(HUMANS, MAX_TABLE_SIZE, MAX_DIFFERENCE)
+    seater = SymmetricPulpSeater(HUMANS, 4, 1)
     print(seater.seat())
