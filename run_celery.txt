@@ -1,0 +1,2 @@
+1. Install rabbitmq
+2. celery -A "tandem.tandem_flask.celery" --loglevel=DEBUG worker

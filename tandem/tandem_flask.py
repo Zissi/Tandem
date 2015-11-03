@@ -1,21 +1,44 @@
+import csv
 from pathlib import Path
 
-from tandem.humans import Human
-
 from flask import Flask, render_template, request
+from celery import Celery
+
+from tandem.humans import Human
 from tandem.symmetric_tandem import SymmetricGurobiSeater
 from tandem.asymmetric_tandem import AsymmetricGurobiSeater
-import csv
+from tandem.asymmetric_tandem import AsymmetricPulpSeater
+from tandem.symmetric_tandem import SymmetricPulpSeater
+
+
 
 file_path = Path(__file__).resolve()
 base_path = file_path.parents[0].resolve()
 backup_path = base_path / 'backup.tsv'
 default_path = base_path / 'default.tsv'
 template_path = file_path.parents[1] / 'templates'
-print(template_path)
 
 app = Flask(__name__,
             template_folder=str(template_path))
+app.config.update(
+    CELERY_BROKER_URL='amqp://localhost',
+    CELERY_RESULT_BACKEND='amqp://localhost'
+)
+
+def make_celery(app):
+    celery = Celery(app.import_name, broker=app.config['CELERY_BROKER_URL'])
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+    class ContextTask(TaskBase):
+        abstract = True
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+    celery.Task = ContextTask
+    return celery
+
+
+celery = make_celery(app)
 
 
 def parse_learning_languages(langs_string):
@@ -88,17 +111,24 @@ def delete_human(req):
 @app.route('/results_symmetric')
 def show_symmetric_results():
     _save_backup()
-    seater = SymmetricGurobiSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
-    tables, unseated = seater.seat()
+    seater = SymmetricPulpSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
+    task = async_seat.delay(seater)
+    tables, unseated = task.wait()
     return render_template('result_symmetric.html', tables=tables, unseated=unseated)
 
 
 @app.route('/results_asymmetric')
 def show_asymmetric_results():
     _save_backup()
-    seater = AsymmetricGurobiSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
-    (round1, round2), (unseated_round_1, unseated_round_2) = seater.seat()
+    seater = AsymmetricPulpSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
+    task = async_seat.delay(seater)
+    (round1, round2), (unseated_round_1, unseated_round_2) = task.wait()
     return render_template('result_asymmetric.html', round1=round1, round2=round2, unseated_round_1=unseated_round_1, unseated_round_2=unseated_round_2)
+
+
+@celery.task(name='async_seat')
+def async_seat(seater):
+    return seater.seat()
 
 
 def delete_all_humans():
@@ -121,7 +151,7 @@ def enter_new_human(r):
 def make_new_human(name, learning_languages, teaching_languages):
     human = Human(name=name, learning_languages=learning_languages, teaching_languages=teaching_languages)
     HUMANS.append(human)
-    
+
 
 def _save_backup():
     with backup_path.open('w') as backup_file:
