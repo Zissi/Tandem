@@ -35,3 +35,49 @@ def test_finds_optimal_solution(seater_class, humans_with_optimal_solution):
 
     for expected_table in expected:
         assert expected_table in actual
+
+
+@fixture
+def unsolvable_humans():
+    anna = Human(name='anna', learning_languages=[('english', 1), ('german', 10)], teaching_languages=['arabic', 'greek'])
+    bert = Human(name='bert', learning_languages=[('french', 1), ('german', 10)], teaching_languages=['arabic', 'spanish'])
+    return [anna, bert]
+
+
+@mark.parametrize("seater_class", [SymmetricPulpSeater, SymmetricGurobiSeater])
+def test_unsolvable(seater_class, unsolvable_humans):
+    target = seater_class(unsolvable_humans,
+                          max_table_size=4,
+                          max_level_difference=0)
+
+    solution = target.seat()
+    actual_seated, actual_unseated = solution
+    
+    expected_seated = []
+    assert actual_seated == expected_seated
+
+    expected_unseated = unsolvable_humans
+    assert actual_unseated == expected_unseated
+    
+    
+@fixture
+def only_teacher_humans():
+    anna = Human(name='anna', learning_languages=[('english', 1)], teaching_languages=['arabic', 'greek'])
+    bert = Human(name='bert', learning_languages=[('french', 1)], teaching_languages=['english'])
+    return [anna, bert]
+
+
+@mark.parametrize("seater_class", [SymmetricPulpSeater, SymmetricGurobiSeater])
+def test_only_teacher(seater_class, only_teacher_humans):
+    target = seater_class(only_teacher_humans,
+                          max_table_size=4,
+                          max_level_difference=0)
+
+    solution = target.seat()
+    actual_seated, actual_unseated = solution
+    
+    expected_seated = []
+    assert actual_seated == expected_seated
+
+    expected_unseated = only_teacher_humans
+    assert actual_unseated == expected_unseated

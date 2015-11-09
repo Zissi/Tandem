@@ -4,7 +4,7 @@ from tandem.base_tandem import Seater
 
 
 
-class GurobiSeater(Seater):
+class GurobiMixin(Seater):
     
     @classmethod
     def _table_lp_variable(cls, lower_bound, upper_bound, model):
@@ -13,7 +13,7 @@ class GurobiSeater(Seater):
             var = model.addVar(name=name,
                                vtype=GRB.BINARY)
             return var
-        return _lp_variable 
+        return _lp_variable
     
     @staticmethod
     def _solve_model(model):
@@ -47,5 +47,8 @@ class GurobiSeater(Seater):
     @staticmethod
     def _chosen_tables(variables, model):
         for language_table, var in variables.items():
-            if var.x == 1.0:
-                yield language_table
+            try:
+                if var.x == 1.0:
+                    yield language_table
+            except GurobiError:
+                pass

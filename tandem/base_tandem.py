@@ -46,7 +46,7 @@ class Seater(abc.ABC):
         self._update_model(seating_model)
         seating_model = self._make_ilp_model(seating_model, is_seated, possible_tables)
         del(possible_tables)
-        self._solve_model(seating_model)        
+        self._solve_model(seating_model)   
         return is_seated, seating_model
         
     def _tables(self):
@@ -125,6 +125,7 @@ class Seater(abc.ABC):
     @abc.abstractstaticmethod
     def _solver_sum(iterable):
         ...
+        
 
 def _acceptable_level_difference(table, languages, max_difference):
     for language in languages:

@@ -4,7 +4,7 @@ from tandem.base_tandem import Seater
 
 
 
-class PulpSeater(Seater):
+class PulpMixin(Seater):
     
     @classmethod
     def _table_lp_variable(cls, lower_bound, upper_bound, model):

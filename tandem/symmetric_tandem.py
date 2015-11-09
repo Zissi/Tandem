@@ -3,8 +3,8 @@ from itertools import product
 import numpy as np
 
 from tandem.base_tandem import HUMANS, Seater, _acceptable_level_difference
-from tandem.pulp_tandem import PulpSeater
-from tandem.gurobi_tandem import GurobiSeater
+from tandem.pulp_tandem import PulpMixin
+from tandem.gurobi_tandem import GurobiMixin
 
 class BaseSymmetricSeater(Seater):
 
@@ -119,12 +119,13 @@ def _unhappiness(table, language_combination):
     return total_unhappiness
 
 
-class SymmetricPulpSeater(BaseSymmetricSeater, PulpSeater):
+class SymmetricPulpSeater(BaseSymmetricSeater, PulpMixin):
     pass
 
 
-class SymmetricGurobiSeater(BaseSymmetricSeater, GurobiSeater):
+class SymmetricGurobiSeater(BaseSymmetricSeater, GurobiMixin):
     pass
+
 
 if __name__ == '__main__':
     seater = SymmetricPulpSeater(HUMANS, 4, 1)
