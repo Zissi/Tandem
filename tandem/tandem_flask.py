@@ -111,7 +111,7 @@ def delete_human(req):
 @app.route('/results_symmetric')
 def show_symmetric_results():
     _save_backup()
-    seater = SymmetricPulpSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
+    seater = SymmetricGurobiSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
     task = async_seat.delay(seater)
     tables, unseated = task.wait()
     return render_template('result_symmetric.html', tables=tables, unseated=unseated)
@@ -120,7 +120,7 @@ def show_symmetric_results():
 @app.route('/results_asymmetric')
 def show_asymmetric_results():
     _save_backup()
-    seater = AsymmetricPulpSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
+    seater = AsymmetricGurobiSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
     task = async_seat.delay(seater)
     (round1, round2), (unseated_round_1, unseated_round_2) = task.wait()
     return render_template('result_asymmetric.html', round1=round1, round2=round2, unseated_round_1=unseated_round_1, unseated_round_2=unseated_round_2)
