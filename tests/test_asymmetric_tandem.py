@@ -1,8 +1,7 @@
 from pytest import fixture, mark
 
 from tandem.humans import Human
-from tandem.asymmetric_tandem import AsymmetricPulpSeater,\
-    AsymmetricGurobiSeater
+from tandem.asymmetric_tandem import AsymmetricPulpSeater, AsymmetricGurobiSeater
 
 
 @fixture
@@ -12,6 +11,21 @@ def humans_matching_small_and_big_groups():
               Human(name='clara', learning_languages=[('arabic', 2)], teaching_languages=['german']),
               Human(name='dirk', learning_languages=[('arabic', 2)], teaching_languages=['german'])]
     return humans
+
+
+@mark.parametrize("seater_class", [AsymmetricPulpSeater, AsymmetricGurobiSeater])
+def test_prefer_small_groups(seater_class, humans_matching_small_and_big_groups):
+    target = seater_class(humans_matching_small_and_big_groups,
+                          max_table_size=4,
+                          max_level_difference=0)
+    actual = target.seat()
+    (actual_first, actual_second), (unseated_first, unseated_second) = actual
+
+    expected_unseated = []
+    assert unseated_first == unseated_second == expected_unseated
+
+    expected_table_size = 2
+    assert len(actual_first) == len(actual_second) == expected_table_size
 
 
 @fixture
@@ -28,21 +42,6 @@ def humans_with_optimal_solution():
                 ((bert, clara), frozenset(['spanish']))]
 
     return humans, solution
-
-
-@mark.parametrize("seater_class", [AsymmetricPulpSeater, AsymmetricGurobiSeater])
-def test_prefer_small_groups(seater_class, humans_matching_small_and_big_groups):
-    target = seater_class(humans_matching_small_and_big_groups,
-                          max_table_size=4,
-                          max_level_difference=0)
-    actual = target.seat()
-    (actual_first, actual_second), (unseated_first, unseated_second) = actual
-
-    expected_unseated = []
-    assert unseated_first == unseated_second == expected_unseated
-
-    expected_table_size = 2
-    assert len(actual_first) == len(actual_second) == expected_table_size
 
 
 @mark.parametrize("seater_class", [AsymmetricPulpSeater, AsymmetricGurobiSeater])

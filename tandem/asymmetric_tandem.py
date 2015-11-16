@@ -38,7 +38,10 @@ class BaseAsymmetricSeater(Seater):
                 impossible_humans.add(human)
 
         possible_tables = [(table, langs) for (table, langs) in possible_tables if not set(table) & impossible_humans]
-        possible_tables = list(permutations(possible_tables, 2))
+        possible_tables = permutations(possible_tables, 2)
+        possible_tables = [table_combo for table_combo in possible_tables if _valid_table_combo(table_combo)]
+
+
         is_seated, seating_model = self._solved_variables_and_model(possible_tables)
 
         return self._optimized_tables(is_seated, seating_model)
@@ -154,6 +157,27 @@ def _is_teacher(human, table_language_combination):
             return True
 
     return False
+
+
+def _valid_table_combo(table_combo):
+    (table1, langs1), (table2, langs2) = table_combo
+    overlapping_humans = set(table1) & set(table2)
+    if not overlapping_humans:
+        return False
+
+    for human in overlapping_humans:
+        is_teacher1 = _is_teacher(human, langs1)
+        is_teacher2 = _is_teacher(human, langs2)
+        is_pupil1 = _is_pupil(human, langs1)
+        is_pupil2 = _is_pupil(human, langs2)
+
+        is_teacher_then_pupil = is_teacher1 and is_pupil2
+        is_pupil_then_teacher = is_teacher2 and is_pupil1
+        is_teacher_and_pupil = is_teacher_then_pupil or is_pupil_then_teacher
+        if not is_teacher_and_pupil:
+            return False
+
+    return True
 
 
 def _is_pupil(human, table_language_combination):
