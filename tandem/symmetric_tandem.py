@@ -113,7 +113,9 @@ def _unhappiness(table, language_combination):
                 break
     levels = [int(i) for i in levels]
     levels = np.array(levels)
-    levels = levels / max(levels)
+    maximum = max(levels)
+    if maximum:
+        levels = levels / max(levels)
     level_unhappiness = np.std(levels)
     total_unhappiness = ranking_unhappiness + level_unhappiness
     return total_unhappiness

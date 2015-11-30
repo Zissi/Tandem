@@ -9,6 +9,7 @@ from tandem.symmetric_tandem import SymmetricGurobiSeater
 from tandem.asymmetric_tandem import AsymmetricGurobiSeater
 from tandem.asymmetric_tandem import AsymmetricPulpSeater
 from tandem.symmetric_tandem import SymmetricPulpSeater
+from tandem.suboptimal_tandem import SuboptimalGurobiSeater
 
 
 
@@ -79,9 +80,6 @@ def _load_backup():
 
 HUMANS = list(_load_backup())
 
-MAX_TABLE_SIZE = 3
-MAX_LEVEL_DIFFERENCE = 1
-
 
 @app.route('/')
 def add_humans():
@@ -111,7 +109,7 @@ def delete_human(req):
 @app.route('/results_symmetric')
 def show_symmetric_results():
     _save_backup()
-    seater = SymmetricGurobiSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
+    seater = SymmetricGurobiSeater(HUMANS, max_table_size=5, max_level_difference=1)
     task = async_seat.delay(seater)
     tables, unseated = task.wait()
     return render_template('result_symmetric.html', tables=tables, unseated=unseated)
@@ -120,7 +118,16 @@ def show_symmetric_results():
 @app.route('/results_asymmetric')
 def show_asymmetric_results():
     _save_backup()
-    seater = AsymmetricGurobiSeater(HUMANS, MAX_TABLE_SIZE, MAX_LEVEL_DIFFERENCE)
+    seater = AsymmetricGurobiSeater(HUMANS, max_table_size=3, max_level_difference=2)
+    task = async_seat.delay(seater)
+    (round1, round2), (unseated_round_1, unseated_round_2) = task.wait()
+    return render_template('result_asymmetric.html', round1=round1, round2=round2, unseated_round_1=unseated_round_1, unseated_round_2=unseated_round_2)
+
+
+@app.route('/results_suboptimal')
+def show_suboptimal_results():
+    _save_backup()
+    seater = SuboptimalGurobiSeater(HUMANS, max_table_size=5, max_level_difference=10)
     task = async_seat.delay(seater)
     (round1, round2), (unseated_round_1, unseated_round_2) = task.wait()
     return render_template('result_asymmetric.html', round1=round1, round2=round2, unseated_round_1=unseated_round_1, unseated_round_2=unseated_round_2)

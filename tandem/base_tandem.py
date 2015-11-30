@@ -31,7 +31,7 @@ class Seater(abc.ABC):
         self.max_level_difference = max_level_difference
 
     def seat(self):
-        possible_tables = self._filtered_tables()
+        possible_tables = list(self._filtered_tables())
         seatings = self._optimal_seatings(possible_tables)
         not_matched = self._not_matched(seatings)
 
